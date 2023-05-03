@@ -73,7 +73,7 @@ function EmailWise() {
     }
 
 
-    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("test")
+    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Email Wise")
     if (sheet) {
         sheet.clear()
         let rowindex = 1
@@ -81,8 +81,8 @@ function EmailWise() {
             let firstrow = true
             for (let i = 0; i < user.resources.length; i++) {
                 if (firstrow) {
-                    sheet?.getRange(rowindex, 1).setValue(finalUsers[i].name)
-                    sheet?.getRange(rowindex, 2).setValue(finalUsers[i].email)
+                    sheet?.getRange(rowindex, 1).setValue(user.name)
+                    sheet?.getRange(rowindex, 2).setValue(user.email)
                     sheet?.getRange(rowindex, 3).setValue(user.resources[i].sheet)
                     sheet?.getRange(rowindex, 4).setValue(user.resources[i].access_type)
                     sheet?.getRange(rowindex, 5).setValue(user.resources[i].link)
