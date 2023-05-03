@@ -117,7 +117,7 @@ function onEditProductionProtect() {
         let value = range.getValue()
         let items = []
 
-        if (value != "") {
+        if (value !=="") {
             let setProtection = true
             items.forEach((item) => {
                 if (String(item) === String(value)) {

@@ -8,7 +8,7 @@ type User = {
     }[]
 }
 
-function EmailWise() {
+function EmailWiseDashboard() {
     let data = DriveApp.getFiles()
     let sheetMimeType = "application/vnd.google-apps.spreadsheet"
     let Files: GoogleAppsScript.Drive.File[] = []

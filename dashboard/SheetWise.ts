@@ -6,7 +6,7 @@ type Sheet = {
     editors: GoogleAppsScript.Drive.User[],
     viewers: GoogleAppsScript.Drive.User[]
 }
-function SheetWise() {
+function SheetWiseDashboard() {
     let data = DriveApp.getFiles()
     let sheetMimeType = "application/vnd.google-apps.spreadsheet"
     let Files: GoogleAppsScript.Drive.File[] = []

@@ -1,6 +1,6 @@
 function LeadsManagement() {
     let name = "leads_management"
-    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name.toLowerCase())
+    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("leads_management")
     if (sheet) {
         let row = sheet.getActiveCell().getRow()
         let col = sheet.getActiveCell().getColumn()
