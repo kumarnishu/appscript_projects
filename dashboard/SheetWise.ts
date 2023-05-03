@@ -31,8 +31,7 @@ function SheetWise() {
         }
     })
 
-    let sheetName = "Sheet Wise"
-    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName.toLowerCase())
+    let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet Wise")
     if (sheet) {
         sheet.clear()
         for (let i = 0; i < sheets.length; i++) {
