@@ -16,7 +16,6 @@ function sheetProtection() {
                 }
             })
             if (setProtection) {
-                sheet.getRange(row, 1).setValue(new Date().toLocaleString())
                 let protection = range.protect()
                 protection.removeEditors(protection.getEditors());
                 if (protection.canDomainEdit())
