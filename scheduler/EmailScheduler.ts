@@ -1,5 +1,5 @@
 // Compiled using appscript_projects 1.0.0 (TypeScript 4.9.5)
-var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("scheduler");
+var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("email scheduler");
 var date = new Date(sheet === null || sheet === void 0 ? void 0 : sheet.getRange(2, 9).getValue());
 var ScriptProperty = PropertiesService.getScriptProperties()
 ScriptProperty.setProperty('count', '0')
@@ -59,7 +59,7 @@ function SetUpEmailTrigger() {
     CountTasks();
 }
 function SendEmail() {
-    GmailApp.sendEmail("kumarnishu437@gmail.com", "testing mail from scheduler", "this is automated message");
+    GmailApp.sendEmail("furkankhan2208@gmail.com", "testing mail from scheduler", "this is automated message");
     ScriptProperty.setProperty('count', String(count--))
     CountTasks();
 }
@@ -68,7 +68,7 @@ function DeleteTrigger() {
     ScriptApp.getProjectTriggers().forEach(function (trigger) {
         if (trigger.getHandlerFunction() === "SendEmail" || trigger.getHandlerFunction() === "SetUpEmailTrigger") {
             ScriptApp.deleteTrigger(trigger);
-            ScriptProperty.setProperty('count', String(count--))
+            ScriptProperty.setProperty('count', String(0))
         }
     });
     DisplayAlert("task stopped");
