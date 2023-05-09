@@ -1,6 +1,7 @@
 // Compiled using appscript_projects 1.0.0 (TypeScript 4.9.5)
 var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("whatsapp scheduler");
 var date = new Date(sheet === null || sheet === void 0 ? void 0 : sheet.getRange(2, 9).getValue());
+
 var ScriptProperty = PropertiesService.getScriptProperties()
 ScriptProperty.setProperty('whatsappcount', '0')
 ScriptProperty.setProperty('whatsappcountfailed', '0')
@@ -63,32 +64,55 @@ function SetUpWhatsappTrigger() {
     sheet?.getRange(2, 11).setValue("task started").setFontColor("green");
     whatsappCountTasks()
 }
-function SendWhatsapp() {
-    var url = "https://graph.facebook.com/v16.0/103342876089967/messages";
-    var data = {
+
+function sendTemplateMessage() {
+    let token = ScriptProperty.getProperty('accessToken')
+    let url = "https://graph.facebook.com/v16.0/103342876089967/messages";
+    let data = {
         "messaging_product": "whatsapp",
+        "recipient_type": "individual",
         "to": "917056943283",
         "type": "template",
         "template": {
-            "name": "hello_world",
-            "language": { "code": "en_US" }
+            "name": "salary_reminder",
+            "language": {
+                "code": "en_US"
+            },
+            "components": [
+                {
+                    "type": "header",
+                    "parameters": [
+                        {
+                            "type": "image",
+                            "image": {
+                                "link": "https://fplogoimages.withfloats.com/tile/605af6c3f7fc820001c55b20.jpg"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "body",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": "Sandeep"
+                        }
+                    ]
+                }
+            ]
         }
     }
-    var options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
+    let options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
         "method": "post",
         "headers": {
-            "Authorization": "Bearer " + "EAANSh4Xqjb4BAI4g2QtGTGHne1YdxbRz2yncJCEQN4jE2TxYu3hzXCZAK9oT6cRYwc5UIHLTtNMmJ567cZBJUc7Yqu9Kb7k7LfE6fXUHM9N523BDYYZAuFeaTZA5yWiSZC6tDGYYv6mnJi8MtHDL7CDjwVQbyOSM8NnT4GuEcge0WEVFCrgMMX0JfX28HEmxoXKhGsZBv9KEgc1h7NEqyWGg1QY3b9tecZD"
+            "Authorization": `Bearer ${token}`
         },
         "contentType": "application/json",
-        "payload": JSON.stringify(data) 
+        "payload": JSON.stringify(data)
     };
-    var response = UrlFetchApp.fetch(url, options)
-    if (response.getResponseCode()===200)
-        ScriptProperty.setProperty('whatsappcountsuccess', String(whatsappcountsuccess++))
-    else
-        ScriptProperty.setProperty('whatsappcountfailed',String(whatsappcountfailed++))
-    ScriptProperty.setProperty('whatsappcount', String(whatsappcount--))
+    UrlFetchApp.fetch(url, options)
 }
+
 //delete trigger
 function DeleteWhatsappTrigger() {
     ScriptApp.getProjectTriggers().forEach(function (trigger) {
