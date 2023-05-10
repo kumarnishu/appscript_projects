@@ -1,7 +1,6 @@
 
 function doGet(e: GoogleAppsScript.Events.DoGet) {
     const ScriptProperty = PropertiesService.getScriptProperties()
-
     //Displays the text on the webpage.
     let mode = e.parameter["hub.mode"];
     let challange = e.parameter["hub.challenge"];
@@ -16,31 +15,42 @@ function doGet(e: GoogleAppsScript.Events.DoGet) {
 }
 function doPost(e: GoogleAppsScript.Events.DoPost) {
     const ScriptProperty = PropertiesService.getScriptProperties()
-    const { entry } = JSON.parse(e.postData.contents)
-    let message = ""
-    let from = ""
-    ServerLog(entry[0].changes[0].value)
-    ServerLog(entry[0].changes[0].value.messages[0])
-    let type = entry[0].changes[0].value.messages[0].type
-    ServerLog("type" + type)
-    ServerLog(JSON.stringify(entry))
     let token = ScriptProperty.getProperty('accessToken')
-    if (entry.length > 0 && token) {
-        message = entry[0].changes[0].value.messages[0].text.body
-        from = entry[0].changes[0].value.messages[0].from
-        sendTemplate1(token)
-        if (type === "text")
-         sendText(`hi we have recieved your message ${message}`, from, token)
-        if (type === "button")
-            {
-            ServerLog(JSON.stringify(entry[0].changes[0].value.messages[0].button))
-            ServerLog("successful")
-            sendText(`Thanks for salary ${entry[0].changes[0].value.messages[0].button.text}`, from, token)
+    const { entry } = JSON.parse(e.postData.contents)
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("monthly salary scheduler")
+    try {
+        if (entry.length > 0 && token) {
+            let message = ""
+            let from = ""
+            let type = entry[0].changes[0].value.messages[0].type
+            switch (type) {
+                case "button": {
+                    from = entry[0].changes[0].value.messages[0].from
+                    let btnRes = entry[0].changes[0].value.messages[0].button.text
+                    if (btnRes === "Sent") {
+                        sheet?.getRange(2,3).setValue("Paid")
+                        sendText(`Thanks for salary`, from, token)
+                    }
+                    if (btnRes === "Later") {
+                        sheet?.getRange(2,3).setValue("Pay Later")
+                        sendText(`No Problem Thankyou`, from, token)
+                    }
+                }
+                    break;
+                case "text": {
+                    from = entry[0].changes[0].value.messages[0].from
+                    message = entry[0].changes[0].value.messages[0].text.body
+                    sendText(`hi we have recieved your message ${message}`, from, token)
+                }
+                    break;
+                default: sendText(`failed to parse message ${message}`, from, token)
             }
-        else{
-            ServerLog("failed")
         }
     }
+    catch (error) {
+        ServerLog(error)
+    }
+
 }
 
 function sendText(message: string, from: string, token: string) {
@@ -64,52 +74,7 @@ function sendText(message: string, from: string, token: string) {
     UrlFetchApp.fetch(url, options)
 }
 
-function sendTemplate1(token: string) {
-    let url = "https://graph.facebook.com/v16.0/103342876089967/messages";
-    let data = {
-        "messaging_product": "whatsapp",
-        "recipient_type": "individual",
-        "to": "917056943283",
-        "type": "template",
-        "template": {
-            "name": "salary_reminder",
-            "language": {
-                "code": "en_US"
-            },
-            "components": [
-                {
-                    "type": "header",
-                    "parameters": [
-                        {
-                            "type": "image",
-                            "image": {
-                                "link": "https://fplogoimages.withfloats.com/tile/605af6c3f7fc820001c55b20.jpg"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "type": "body",
-                    "parameters": [
-                        {
-                            "type": "text",
-                            "text": "Sandeep"
-                        }
-                    ]
-                }
-            ]
-        }
-    }
-    let options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
-        "method": "post",
-        "headers": {
-            "Authorization": `Bearer ${token}`
-        },
-        "contentType": "application/json",
-        "payload": JSON.stringify(data)
-    };
-    UrlFetchApp.fetch(url, options)
-}
+
 
 function sendTemplate2(token: string) {
     let url = "https://graph.facebook.com/v16.0/103342876089967/messages";
@@ -154,7 +119,6 @@ function sendTemplate2(token: string) {
     };
     UrlFetchApp.fetch(url, options)
 }
-
 
 
 function ServerLog(msg: string) {
