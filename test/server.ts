@@ -23,7 +23,7 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
     ServerLog(entry[0].changes[0].value.messages[0])
     let type = entry[0].changes[0].value.messages[0].type
     ServerLog("type" + type)
-    ServerLog(entry)
+    ServerLog(JSON.stringify(entry))
     let token = ScriptProperty.getProperty('accessToken')
     if (entry.length > 0 && token) {
         message = entry[0].changes[0].value.messages[0].text.body
@@ -32,7 +32,14 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
         if (type === "text")
          sendText(`hi we have recieved your message ${message}`, from, token)
         if (type === "button")
+            {
+            ServerLog(JSON.stringify(entry[0].changes[0].value.messages[0].button))
+            ServerLog("successful")
             sendText(`Thanks for salary ${entry[0].changes[0].value.messages[0].button.text}`, from, token)
+            }
+        else{
+            ServerLog("failed")
+        }
     }
 }
 
