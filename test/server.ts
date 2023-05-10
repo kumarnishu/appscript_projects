@@ -19,21 +19,23 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
     const { entry } = JSON.parse(e.postData.contents)
     let message = ""
     let from = ""
-    let buttonMessage = ""
+    ServerLog(entry[0].changes[0].value)
+    ServerLog(entry[0].changes[0].value.messages[0])
+    let type = entry[0].changes[0].value.messages[0].type
+    ServerLog("type"+type)
     let token = ScriptProperty.getProperty('accessToken')
-    ServerLog(message + buttonMessage)
     if (entry.length > 0 && token) {
         message = entry[0].changes[0].value.messages[0].text.body
-        buttonMessage = entry[0].changes[0].value.messages[0].button.payload
         from = entry[0].changes[0].value.messages[0].from
-        ServerLog(message + buttonMessage)
-        if (buttonMessage === "Sent")
-            sendTextMessage(`thanks for sending salary`, from, token)
-        sendTextMessage(`hi we have recieved your message ${message}`, from, token)
+        sendTemplate1(token)
+        if (type === "text")
+         sendText(`hi we have recieved your message ${message}`, from, token)
+        if (type === "button")
+            sendText(`Thanks for salary ${entry[0].changes[0].value.messages[0].button.text}`, from, token)
     }
 }
 
-function sendTextMessage(message: string, from: string, token: string) {
+function sendText(message: string, from: string, token: string) {
     let url = "https://graph.facebook.com/v16.0/103342876089967/messages";
     let data = {
         "messaging_product": "whatsapp",
@@ -53,6 +55,98 @@ function sendTextMessage(message: string, from: string, token: string) {
     };
     UrlFetchApp.fetch(url, options)
 }
+
+function sendTemplate1(token: string) {
+    let url = "https://graph.facebook.com/v16.0/103342876089967/messages";
+    let data = {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": "917056943283",
+        "type": "template",
+        "template": {
+            "name": "salary_reminder",
+            "language": {
+                "code": "en_US"
+            },
+            "components": [
+                {
+                    "type": "header",
+                    "parameters": [
+                        {
+                            "type": "image",
+                            "image": {
+                                "link": "https://fplogoimages.withfloats.com/tile/605af6c3f7fc820001c55b20.jpg"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "body",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": "Sandeep"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+    let options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
+        "method": "post",
+        "headers": {
+            "Authorization": `Bearer ${token}`
+        },
+        "contentType": "application/json",
+        "payload": JSON.stringify(data)
+    };
+    UrlFetchApp.fetch(url, options)
+}
+
+function sendTemplate2(token: string) {
+    let url = "https://graph.facebook.com/v16.0/103342876089967/messages";
+    let data = {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": "917056943283",
+        "type": "template",
+        "template": {
+            "name": "product_announcement",
+            "language": {
+                "code": "en_US"
+            },
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": "Nishu kumar"
+                        },
+                        {
+                            "type": "text",
+                            "text": "RockFord Article"
+                        },
+                        {
+                            "type": "text",
+                            "text": "https://www.agarson.com/"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+    let options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
+        "method": "post",
+        "headers": {
+            "Authorization": `Bearer ${token}`
+        },
+        "contentType": "application/json",
+        "payload": JSON.stringify(data)
+    };
+    UrlFetchApp.fetch(url, options)
+}
+
 
 
 function ServerLog(msg: string) {
