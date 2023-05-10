@@ -22,7 +22,8 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
     ServerLog(entry[0].changes[0].value)
     ServerLog(entry[0].changes[0].value.messages[0])
     let type = entry[0].changes[0].value.messages[0].type
-    ServerLog("type"+type)
+    ServerLog("type" + type)
+    ServerLog(entry)
     let token = ScriptProperty.getProperty('accessToken')
     if (entry.length > 0 && token) {
         message = entry[0].changes[0].value.messages[0].text.body
