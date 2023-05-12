@@ -5,6 +5,10 @@ function onOpen() {
     SpreadsheetApp.getUi().createMenu("Scheduler").addItem("Start", 'StartScheduler').addItem("Stop", 'StopScheduler').addToUi();
 }
 
+//dummy function to check status globally
+function CheckSchedulerStatusGlobally() {
+    return
+}
 
 //start scheduler
 function StartScheduler() {
@@ -24,13 +28,12 @@ function StartScheduler() {
         for (let i = 3; i <= sheet.getLastRow(); i++) {
             let autoStop = sheet?.getRange(i, 12).getValue()
             let work_status = sheet?.getRange(i, 3).getValue()
-            if (String(autoStop).toLowerCase() !== "stop" && String(work_status).toLowerCase() !== "done")
+            if (String(autoStop).toLowerCase() !== "stop" && String(work_status).toLowerCase() !== "done") {
                 if (TriggerErrorHandler(i))
                     return
+            }
         }
-
         Alert("Congrats !! validation successful,no Error found, we will start setting up scheduler for each row now ?")
-
         //setup trigger
         for (let i = 3; i <= sheet.getLastRow(); i++) {
             let autoStop = sheet?.getRange(i, 12).getValue()
@@ -38,22 +41,18 @@ function StartScheduler() {
             let date = new Date(sheet?.getRange(i, 13).getValue())
             let phone = sheet?.getRange(i, 7).getValue()
             let name = sheet?.getRange(i, 6).getValue()
-            if (String(autoStop).toLowerCase() !== "stop" && String(work_status).toLowerCase() !== "done")
-                SetUpTrigger1(date, phone, name, i)
+            if (String(autoStop).toLowerCase() !== "stop" && String(work_status).toLowerCase() !== "done") {
+                DateTrigger(date, phone, name, i)
+            }
         }
-        Alert("Congrats !! We have setup scheduler for each row now Successfully ?")
+        Alert("Congrats !! We have setup scheduler for each row where `auto stop is not stop` and `work status is not done` now Successfully ?")
+        ScriptApp.newTrigger('CheckSchedulerStatusGlobally').timeBased().at(new Date()).create()
     }
-
-    ScriptApp.newTrigger('CheckSchedulerStatusGlobally').timeBased().at(new Date()).create()
 }
 
-//dummy function to check status globally
-function CheckSchedulerStatusGlobally() {
-    return
-}
 
-//setup repeated trigger for each row
-function SetUpRepeatedTrigger() {
+//setup whatsapp trigger for each row
+function SetUpWhatsappTrigger() {
     if (sheet) {
         for (let i = 3; i <= sheet?.getLastRow(); i++) {
             let autoStop = sheet?.getRange(i, 12).getValue()
@@ -62,80 +61,186 @@ function SetUpRepeatedTrigger() {
             let phone = sheet?.getRange(i, 7).getValue()
             let name = sheet?.getRange(i, 6).getValue()
             if (String(autoStop).toLowerCase() !== "stop" && String(work_status).toLowerCase() !== "done")
-                SetUpTrigger2(date, phone, name, i)
+                WhatsappTrigger(date, phone, name, i)
         }
     }
 }
 
-//setup trigger 1
-function SetUpTrigger1(date: Date, phoneno: number, name: string, index: number) {
-    let trigger = ScriptApp.newTrigger('SetUpRepeatedTrigger').timeBased().at(date).create()
-    TrackTrigger(date, phoneno, name, trigger.getUniqueId(), trigger.getHandlerFunction())
-    sheet?.getRange(index, 1).setValue("ready").setFontColor("orange").setFontWeight('bold')
+// date trigger
+function DateTrigger(date: Date, phoneno: number, name: string, index: number) {
+    let trigger = ScriptApp.newTrigger('SetUpDateTrigger').timeBased().at(date).create()
+    SaveTrigger(date, phoneno, name, trigger.getUniqueId(), trigger.getHandlerFunction())
+    sheet?.getRange(index, 1).setValue("ready").setFontWeight('bold')
 }
 
-//setup trigger 2
-function SetUpTrigger2(date: Date, phoneno: number, name: string, index: number) {
-    let trigger = ScriptApp.newTrigger('SendWhatsappMessageWithButtons').timeBased().at(date).create()
-    TrackTrigger(date, phoneno, name, trigger.getUniqueId(),trigger.getHandlerFunction())
-    sheet?.getRange(index, 1).setValue("running").setFontColor("green").setFontWeight('bold')
-}
-
-
-//tracking triggers with phone and their id
-function TrackTrigger(date: Date, phone: number, name: string, trigger_id: string,trigger_type:string) {
-    Logger.log(date + " : " + phone + " : " + trigger_id + " : " + name)
-}
-
-//find trigger
-function FindTrigger(phoneno: number, trigger_id: string,trigger_type:string) {
-    let sheett=SpreadsheetApp.getActiveSpreadsheet().getSheetByName("triggers")
-    let trigger: any=undefined
-    if (sheett){
-        for (let i = 2; i <= sheett.getLastRow(); i++) {
-            let trigger_id = sheet?.getRange(i,2).getValue()
-            let trigger_type = sheet?.getRange(i, 3).getValue()
-            let mobile = sheet?.getRange(i, 4).getValue()
-            if (trigger_type === trigger_type && phoneno===mobile){
-                trigger=ScriptApp.getProjectTriggers().find(trigger=>trigger.getUniqueId()===trigger_id)
-            }
-        }
-    }
-    return trigger
-}
-
-//trigger error handler
-function TriggerErrorHandler(index) {
+// whatsapp trigger 
+function WhatsappTrigger(date: Date, phoneno: number, name: string, index: number) {
     let mf = sheet?.getRange(index, 15).getValue();
     let hf = sheet?.getRange(index, 16).getValue();
     let df = sheet?.getRange(index, 17).getValue();
     let wf = sheet?.getRange(index, 18).getValue();
     let monthf = sheet?.getRange(index, 19).getValue();
     let yearf = sheet?.getRange(index, 20).getValue();
-    let weekdays = sheet?.getRange(index, 21).getValue();
-    let monthdays = sheet?.getRange(index, 22).getValue()
+    let weekdays = String(sheet?.getRange(index, 21).getValue())
+    let monthdays = String(sheet?.getRange(index, 22).getValue())
+    let triggers: GoogleAppsScript.Script.Trigger[] = []
+    if (mf > 0) {
+        let tr = ScriptApp.newTrigger('SendWhatsappMessageWithButtons').timeBased().everyMinutes(mf).create();
+        triggers.push(tr)
+    }
+    if (hf > 0) {
+        let tr = ScriptApp.newTrigger('SendWhatsappMessageWithButtons').timeBased().everyHours(hf).create();
+        triggers.push(tr)
+    }
+    if (df > 0) {
+        let tr = ScriptApp.newTrigger('SendWhatsappMessageWithButtons').timeBased().everyDays(df).create();
+        triggers.push(tr)
+    }
+    if (wf > 0) {
+        let tr = ScriptApp.newTrigger('SendWhatsappMessageWithButtons').timeBased().everyWeeks(wf).create();
+        triggers.push(tr)
+    }
+    if (monthf > 0) {
+        let tr = ScriptApp.newTrigger('SendWhatsappMessageWithButtons').timeBased().everyDays(GetMonthDays(date.getFullYear(), date.getMonth())).create()
+
+        triggers.push(tr)
+    }
+    if (yearf > 0) {
+        let tr = ScriptApp.newTrigger('SendWhatsappMessageWithButtons').timeBased().everyDays(365 * yearf).create();
+        triggers.push(tr)
+    }
+    weekdays.split(",").forEach((wd) => {
+        let tr = ScriptApp.newTrigger('SendWhatsappMessageWithButtons').timeBased().onWeekDay(ScriptApp.WeekDay.THURSDAY).atHour(date.getHours()).create();
+        triggers.push(tr)
+    })
+    monthdays.split(",").forEach((md) => {
+        let tr = ScriptApp.newTrigger('SendWhatsappMessageWithButtons').timeBased().onMonthDay(Number(md)).atHour(date.getHours()).create();
+        triggers.push(tr)
+    })
+    let tr = ScriptApp.newTrigger('SendWhatsappMessageWithButtons').timeBased().at(date).create();
+    triggers.push(tr)
+    triggers.forEach((trigger) => {
+        SaveTrigger(date, phoneno, name, trigger.getUniqueId(), trigger.getHandlerFunction())
+    })
+    sheet?.getRange(index, 1).setValue("running").setFontWeight('bold')
+}
+
+//Saving to track triggers with phone and their id
+function SaveTrigger(date: Date, phone: number, name: string, trigger_id: string, trigger_type: string) {
+    let tsheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('triggers')
+    let row = tsheet?.getDataRange().getLastRow()
+    if (row)
+        row = row + 1
+    if (row) {
+        tsheet?.getRange(row, 1).setValue(date)
+        tsheet?.getRange(row, 2).setValue(trigger_id)
+        tsheet?.getRange(row, 3).setValue(trigger_type)
+        tsheet?.getRange(row, 4).setValue(phone)
+        tsheet?.getRange(row, 5).setValue(name)
+    }
+}
+
+//find trigger
+function FindTriggers(phoneno: number, trigger_type: string) {
+    let sheett = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("triggers")
+    let triggers: GoogleAppsScript.Script.Trigger[] = []
+    if (sheett) {
+        for (let i = 2; i <= sheett.getLastRow(); i++) {
+            let trigger_id = sheett?.getRange(i, 2).getValue()
+            let trigger_t = sheett?.getRange(i, 3).getValue()
+            let mobile = sheett?.getRange(i, 4).getValue()
+            if (trigger_type === trigger_t && phoneno === mobile) {
+                let tr = ScriptApp.getProjectTriggers().find(trigger => trigger.getUniqueId() === trigger_id)
+                if (tr)
+                    triggers.push(tr)
+            }
+        }
+    }
+    return triggers
+}
+
+//all triggers
+function findAllTriggers() {
+    let sheett = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("triggers")
+    let triggers: GoogleAppsScript.Script.Trigger[] = []
+    if (sheett) {
+        for (let i = 2; i <= sheett.getLastRow(); i++) {
+            let trigger_id = sheett?.getRange(i, 2).getValue()
+            let tr = ScriptApp.getProjectTriggers().find(trigger => trigger.getUniqueId() === trigger_id)
+            if (tr)
+                triggers.push(tr)
+        }
+    }
+    return triggers
+}
+
+//delete trigger
+function DeleteTrigger(trigger: GoogleAppsScript.Script.Trigger, index: number) {
+    ScriptApp.deleteTrigger(trigger)
+    sheet?.getRange(index, 1).setValue("stopped").setFontWeight('bold')
+}
+
+//trigger error handler
+function TriggerErrorHandler(index) {
+    let errorStatus = false
+    let mf = sheet?.getRange(index, 15).getValue();
+    let hf = sheet?.getRange(index, 16).getValue();
+    let df = sheet?.getRange(index, 17).getValue();
+    let wf = sheet?.getRange(index, 18).getValue();
+    let monthf = sheet?.getRange(index, 19).getValue();
+    let yearf = sheet?.getRange(index, 20).getValue();
+    let weekdays = String(sheet?.getRange(index, 21).getValue())
+    let monthdays = String(sheet?.getRange(index, 22).getValue())
+
     let phoneno = sheet?.getRange(index, 7).getValue()
-
-    let TmpArr = [mf, hf, df, wf, monthf, yearf, weekdays, monthdays]
-
+    let date = new Date(sheet?.getRange(index, 13).getValue())
+    if (date < new Date()) {
+        Alert(`Select valid  date ,date could not be in the past: Error comes from Row No ${index} In Data Range`)
+        errorStatus = true
+    }
+    let TmpArr = [mf, hf, df, wf, monthf, yearf]
     if (!phoneno) {
         Alert(`Select Phone no first : Error comes from Row No ${index} In Data Range`)
-        return true
+        errorStatus = true
+    }
+    if (String(phoneno).length < 11) {
+        Alert(`Select Phone no in correct format : Error comes from Row No ${index} In Data Range`)
+        errorStatus = true
     }
     let count = 0
     TmpArr.forEach((item) => {
-        if (Number(item) > 0) {
+        if (item > 0) {
             count++;
         }
-        else if (String(item) !== "") {
-            count++
-        }
     });
-    if (count > 1) {
-        Alert(`Select only one from from hour,minutes,days,weeks,year,weekdays and monthdays repeatation : Error comes from Row No ${index} In Data Range`)
-        return true
+    let tmpWeekdays = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+    if (weekdays.length > 0) {
+        let weekDays = weekdays.split(",")
+        weekDays.forEach((item) => {
+            if (!tmpWeekdays.includes(item.toLowerCase())) {
+                Alert(`Select week days in correct format : Error comes from Row No ${index} In Data Range`)
+                errorStatus = true
+            }
+        })
+        count++
     }
-    return false
+    if (String(monthdays).length > 0) {
+        let monthDays = monthdays.split(",")
+        monthDays.forEach((item) => {
+            if (Number(item) === 0 || item.length > 2 || Number(item) > 28) {
+                Alert(`Select month days in correct format less than 29 and more than 0 : Error comes from Row No ${index} In Data Range`)
+                errorStatus = true
+            }
+
+        })
+        count++
+    }
+    if (count > 1) {
+        Alert(`Select only one from from hour,minutes,days,weeks,year ,week days, and month days repeatation : Error comes from Row No ${index} In Data Range`)
+        errorStatus = true
+    }
+    if (errorStatus)
+        return true
 }
 
 //send whatsapp message with response buttons
@@ -188,7 +293,7 @@ function SendWhatsappMessageWithButtons() {
     UrlFetchApp.fetch(url, options)
 }
 
-
+//alert box
 function Alert(message: string) {
     SpreadsheetApp.getUi().alert(message);
     return;
@@ -251,12 +356,16 @@ function GetMonthDays(year: number, month: number) {
 //     sheet?.getRange(3, 13).setValue(true)
 // }
 
-// stop scheduler
+
+
+//stop scheduler
 function StopScheduler() {
     ScriptApp.getProjectTriggers().forEach(function (trigger) {
-        if (trigger.getHandlerFunction() === "SendWhatsappMessageWithButtons" || trigger.getHandlerFunction() === "setUpDateTrigger") {
+        if (trigger.getHandlerFunction() === "SendWhatsappMessageWithButtons'essageWithButtons" || trigger.getHandlerFunction() === "SetUpDateTrigger" || trigger.getHandlerFunction() === "CheckSchedulerStatusGlobally") {
             ScriptApp.deleteTrigger(trigger);
         }
     });
     Alert("task stopped");
+    sheet?.getRange(3, 1, sheet.getLastRow() - 2).clear()
 }
+
