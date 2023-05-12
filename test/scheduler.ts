@@ -1,11 +1,4 @@
 let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("test")
-let schedule_time = sheet?.getRange(3, 8).getValue()
-let date = new Date(sheet?.getRange(3, 13).getValue())
-
-//refresh date and autoStop value  picked from sheet always fresh
-let refreshDate = sheet?.getRange(3, 14).getValue()
-let autoStop = sheet?.getRange(3, 12).getValue()
-let work_status = sheet?.getRange(3, 3).getValue()
 
 //setup scheduler menu
 function onOpen() {
@@ -36,9 +29,13 @@ function StartScheduler() {
             let monthf = sheet?.getRange(i, 19).getValue();
             let yearf = sheet?.getRange(i, 20).getValue();
             let weekdays = sheet?.getRange(i, 21).getValue();
-            let monthdays = sheet?.getRange(i, 22).getValue();
-            if (TriggerErrorHandler(mf, hf, df, wf, monthf, yearf, weekdays, monthdays, i))
-                return
+            let monthdays = sheet?.getRange(i, 22).getValue()
+            let phoneno = sheet?.getRange(i, 7).getValue()
+            let autoStop = sheet?.getRange(i, 12).getValue()
+            let work_status = sheet?.getRange(i, 3).getValue()
+            if (String(autoStop).toLowerCase() !== "stop" && String(work_status).toLowerCase() !== "done")
+                if (TriggerErrorHandler(mf, hf, df, wf, monthf, yearf, weekdays, monthdays, i, phoneno))
+                    return
             Logger.log("error")
         }
 
@@ -54,7 +51,11 @@ function StartScheduler() {
             let yearf = sheet?.getRange(i, 20).getValue();
             let weekdays = sheet?.getRange(i, 21).getValue();
             let monthdays = sheet?.getRange(i, 22).getValue();
-            SetUpTrigger(mf, hf, df, wf, monthf, yearf, weekdays, monthdays, i)
+            let autoStop = sheet?.getRange(i, 12).getValue()
+            let work_status = sheet?.getRange(i, 3).getValue()
+            let phoneno = sheet?.getRange(i, 7).getValue()
+            if (String(autoStop).toLowerCase() !== "stop" && String(work_status).toLowerCase() !== "done")
+                SetUpDateTrigger(mf, hf, df, wf, monthf, yearf, weekdays, monthdays, i, phoneno)
         }
         Alert("Congrats !! We have setup scheduler for each row now Successfully ?")
     }
@@ -69,14 +70,23 @@ function CheckSchedulerStatusGlobally() {
 
 
 // setup trigger based on frequency and repeatation
-function SetUpTrigger(mf: string, hf: string, df: string, wf: string, monthf: string, yearf: string, weekdays: string, monthdays: string, index: number) {
+function SetUpDateTrigger(mf: string, hf: string, df: string, wf: string, monthf: string, yearf: string, weekdays: string, monthdays: string, index: number, phoneno: number) {
     Logger.log("trigger running for : " + index)
     sheet?.getRange(index, 1).setValue("running")
 }
 
+//setup repeated trigger
+function SetUpRepeatedTrigger() {
+    return
+}
+
 //trigger error handler
-function TriggerErrorHandler(mf: string, hf: string, df: string, wf: string, monthf: string, yearf: string, weekdays: string, monthdays: string, index: number) {
+function TriggerErrorHandler(mf: string, hf: string, df: string, wf: string, monthf: string, yearf: string, weekdays: string, monthdays: string, index: number, phoneno: number) {
     let TmpArr = [mf, hf, df, wf, monthf, yearf, weekdays, monthdays]
+    if (!phoneno) {
+        Alert(`Select Phone no first : Error comes from Row No ${index} In Data Range`)
+        return true
+    }
     let count = 0
     TmpArr.forEach((item) => {
         if (Number(item) > 0) {
@@ -87,7 +97,7 @@ function TriggerErrorHandler(mf: string, hf: string, df: string, wf: string, mon
         }
     });
     if (count > 1) {
-        Alert(`Select only one from from hour,minutes,days,weeks,year,weekdays and monthdays repeatation : Error comes from Row No ${index} In Data Range` )
+        Alert(`Select only one from from hour,minutes,days,weeks,year,weekdays and monthdays repeatation : Error comes from Row No ${index} In Data Range`)
         return true
     }
     return false
@@ -211,7 +221,7 @@ function Alert(message: string) {
 // //stop scheduler
 // function StopScheduler() {
 //     ScriptApp.getProjectTriggers().forEach(function (trigger) {
-//         if (trigger.getHandlerFunction() === "SendWhatsappMessageWithButtons" || trigger.getHandlerFunction() === "setUpTrigger") {
+//         if (trigger.getHandlerFunction() === "SendWhatsappMessageWithButtons" || trigger.getHandlerFunction() === "setUpDateTrigger") {
 //             ScriptApp.deleteTrigger(trigger);
 //         }
 //     });
