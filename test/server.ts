@@ -17,7 +17,6 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
     const ScriptProperty = PropertiesService.getScriptProperties()
     let token = ScriptProperty.getProperty('accessToken')
     const { entry } = JSON.parse(e.postData.contents)
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("monthly salary scheduler")
     try {
         if (entry.length > 0 && token) {
             let message = ""
@@ -27,14 +26,8 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
                 case "button": {
                     from = entry[0].changes[0].value.messages[0].from
                     let btnRes = entry[0].changes[0].value.messages[0].button.text
-                    if (btnRes === "Sent") {
-                        sheet?.getRange(2,3).setValue("Paid")
-                        sendText(`Thanks for salary`, from, token)
-                    }
-                    if (btnRes === "Later") {
-                        sheet?.getRange(2,3).setValue("Pay Later")
-                        sendText(`No Problem Thankyou`, from, token)
-                    }
+                    UpdateWorkStatus(from, btnRes)
+                    sendText(`Response saved`, from, token)
                 }
                     break;
                 case "text": {
@@ -75,6 +68,17 @@ function sendText(message: string, from: string, token: string) {
 }
 
 
+function UpdateWorkStatus(phone: string, response: string) {
+    let dataSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('test')
+    if (dataSheet) {
+        for (let i = 3; i <= dataSheet.getLastRow(); i++) {
+            let mobile = String(dataSheet?.getRange(i, 7).getValue())
+            if (mobile === phone) {
+                dataSheet?.getRange(i, 3).setValue(response.toLowerCase())
+            }
+        }
+    }
+}
 
 function sendTemplate2(token: string) {
     let url = "https://graph.facebook.com/v16.0/103342876089967/messages";
