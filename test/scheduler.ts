@@ -341,14 +341,14 @@ function SendWhatsappMessageWithButtons(e: GoogleAppsScript.Events.TimeDriven) {
             try {
 
                 let token = PropertiesService.getScriptProperties().getProperty('accessToken')
-                let url = "https://graph.facebook.com/v16.0/103342876089967/messages";
+                let url = "https://graph.facebook.com/v16.0/120573477697648/messages";
                 let data = {
                     "messaging_product": "whatsapp",
                     "recipient_type": "individual",
                     "to": triggers[0].phone,
                     "type": "template",
                     "template": {
-                        "name": "salary_reminder",
+                        "name": "scheduler_with_response",
                         "language": {
                             "code": "en_US"
                         },
@@ -357,10 +357,8 @@ function SendWhatsappMessageWithButtons(e: GoogleAppsScript.Events.TimeDriven) {
                                 "type": "header",
                                 "parameters": [
                                     {
-                                        "type": "image",
-                                        "image": {
-                                            "link": "https://fplogoimages.withfloats.com/tile/605af6c3f7fc820001c55b20.jpg"
-                                        }
+                                        "type": "text",
+                                        "text": triggers[0].work_title
                                     }
                                 ]
                             },
@@ -369,7 +367,7 @@ function SendWhatsappMessageWithButtons(e: GoogleAppsScript.Events.TimeDriven) {
                                 "parameters": [
                                     {
                                         "type": "text",
-                                        "text": triggers[0].work_title + triggers[0].work_detail
+                                        "text": triggers[0].work_detail
                                     }
                                 ]
                             }

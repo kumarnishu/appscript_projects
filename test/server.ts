@@ -57,7 +57,7 @@ function doPost(e: GoogleAppsScript.Events.DoPost) {
 }
 
 function sendText(message: string, from: string, token: string) {
-    let url = "https://graph.facebook.com/v16.0/103342876089967/messages";
+    let url = "https://graph.facebook.com/v16.0/120573477697648/messages";
     let data = {
         "messaging_product": "whatsapp",
         "to": from,
@@ -85,7 +85,7 @@ function UpdateWorkStatus(phone: string, response: string) {
             let mobile = String(dataSheet?.getRange(i, 7).getValue())
             if (mobile === phone) {
                 dataSheet?.getRange(i, 3).setValue(response.toLowerCase())
-                if (response.toLowerCase() === "sent") {
+                if (response.toLowerCase() === "done") {
                     dataSheet?.getRange(i, 12).setValue("stop")
                 }
             }
