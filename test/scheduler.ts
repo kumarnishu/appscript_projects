@@ -2,8 +2,8 @@ let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("test")
 
 type Trigger = {
     date: Date, trigger_id: string, trigger_type: string, phone: string, name: string, work_title: string, work_detail: string,
-    autoStop:string,template_type:string,
-    last_date:Date,mf: number, hf: number, df: number, wf: number, monthf: number, yearf: number, weekdays: string,
+    autoStop: string, template_type: string,
+    last_date: Date, mf: number, hf: number, df: number, wf: number, monthf: number, yearf: number, weekdays: string,
     monthdays: string
 }
 
@@ -40,7 +40,7 @@ function StartScheduler() {
                     return
             }
         }
-
+        DuplicatePhoneChecker()
         //setup trigger
         for (let i = 3; i <= sheet.getLastRow(); i++) {
             let autoStop = sheet?.getRange(i, 12).getValue()
@@ -85,7 +85,8 @@ function DateTrigger(date: Date, phoneno: number, name: string, index: number, w
     SaveTrigger({
         date: new Date(), trigger_id: trigger.getUniqueId(), trigger_type: trigger.getHandlerFunction(), phone: String(phoneno), name: name, work_title: work_title, work_detail: work_detail, autoStop: string, template_type: string,
         last_date: Date, mf: number, hf: number, df: number, wf: number, monthf: number, yearf: number, weekdays: string,
-        monthdays: string })
+        monthdays: string
+    })
     sheet?.getRange(index, 1).setValue("ready").setFontWeight('bold')
 }
 
@@ -174,7 +175,8 @@ function WhatsappTrigger(date: Date, phoneno: number, name: string, index: numbe
         SaveTrigger({
             date: new Date(), trigger_id: trigger.getUniqueId(), trigger_type: trigger.getHandlerFunction(), phone: String(phoneno), name: name, work_title: work_title, work_detail: work_detail, autoStop: string, template_type: string,
             last_date: Date, mf: number, hf: number, df: number, wf: number, monthf: number, yearf: number, weekdays: string,
-            monthdays: string })
+            monthdays: string
+        })
     })
     sheet?.getRange(index, 1).setValue("running").setFontWeight('bold')
 }
@@ -486,11 +488,12 @@ function RefreshTrigger(date: Date, phoneno: number, name: string, index: number
     let tr = ScriptApp.newTrigger('GetRefresh').timeBased().at(date).create();
     triggers.push(tr)
     triggers.forEach((trigger) => {
-        SaveTrigger({ date: new Date(), trigger_id: trigger.getUniqueId(), trigger_type: trigger.getHandlerFunction(), phone: String(phoneno), name: name, work_title: work_title, work_detail: work_detail,
+        SaveTrigger({
+            date: new Date(), trigger_id: trigger.getUniqueId(), trigger_type: trigger.getHandlerFunction(), phone: String(phoneno), name: name, work_title: work_title, work_detail: work_detail,
             autoStop: string, template_type: string,
             last_date: Date, mf: number, hf: number, df: number, wf: number, monthf: number, yearf: number, weekdays: string,
             monthdays: string
-         })
+        })
     })
     sheet?.getRange(index, 1).setValue("running").setFontWeight('bold')
 }
@@ -541,3 +544,15 @@ function StopScheduler() {
     tsheet?.getRange(1, 7).setValue("work detail").setBackground('yellow')
 }
 
+function DuplicatePhoneChecker() {
+    if (sheet) {
+        let prev = "0066"
+        for (let i = 3; i <= sheet.getLastRow(); i++) {
+            let mobile = String(sheet?.getRange(i, 7).getValue())
+            if (mobile === prev) {
+                Alert(`Duplicate phone no exists :${mobile} Error comes from Row No ${i} In Data Range`)
+            }
+            prev = mobile
+        }
+    }
+}
