@@ -12,31 +12,43 @@ function doGet(e: GoogleAppsScript.Events.DoGet) {
         }
     }
 }
+
 function doPost(e: GoogleAppsScript.Events.DoPost) {
     const ScriptProperty = PropertiesService.getScriptProperties()
     let token = ScriptProperty.getProperty('accessToken')
     const { entry } = JSON.parse(e.postData.contents)
+    ServerLog(e.postData.contents)
     try {
         if (entry.length > 0 && token) {
             let message = ""
             let from = ""
-            let type = entry[0].changes[0].value.messages[0].type
-            switch (type) {
-                case "button": {
-                    from = entry[0].changes[0].value.messages[0].from
-                    let btnRes = entry[0].changes[0].value.messages[0].button.text
-                    UpdateWorkStatus(from, btnRes)
-                    sendText(`Response saved`, from, token)
+            if (entry[0].changes[0].value.messages){
+                let type = entry[0].changes[0].value.messages[0].type
+                if(type){
+                    switch (type) {
+                        case "button": {
+                            from = entry[0].changes[0].value.messages[0].from
+                            let btnRes = entry[0].changes[0].value.messages[0].button.text
+                            UpdateWorkStatus(from, btnRes)
+                            sendText(`Response saved`, from, token)
+                        }
+                            break;
+                        case "text": {
+                            from = entry[0].changes[0].value.messages[0].from
+                            message = entry[0].changes[0].value.messages[0].text.body
+                            sendText(`hi we have recieved your message ${message}`, from, token)
+                        }
+                            break;
+                        default: sendText(`failed to parse message ${message}`, from, token)
+                    }
                 }
-                    break;
-                case "text": {
-                    from = entry[0].changes[0].value.messages[0].from
-                    message = entry[0].changes[0].value.messages[0].text.body
-                    sendText(`hi we have recieved your message ${message}`, from, token)
+                if (entry[0].changes[0].value.statuses) {
+                    let status = String(entry[0].changes[0].value.statuses[0].status)
+                    let phone = String(entry[0].changes[0].value.statuses[0].recipient_id)
+                    UpdateWhatsappStatus(phone, status)
                 }
-                    break;
-                default: sendText(`failed to parse message ${message}`, from, token)
             }
+        
         }
     }
     catch (error) {
@@ -74,6 +86,18 @@ function UpdateWorkStatus(phone: string, response: string) {
             let mobile = String(dataSheet?.getRange(i, 7).getValue())
             if (mobile === phone) {
                 dataSheet?.getRange(i, 3).setValue(response.toLowerCase())
+            }
+        }
+    }
+}
+
+function UpdateWhatsappStatus(phone: string, response: string) {
+    let dataSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('test')
+    if (dataSheet) {
+        for (let i = 3; i <= dataSheet.getLastRow(); i++) {
+            let mobile = String(dataSheet?.getRange(i, 7).getValue())
+            if (mobile === phone) {
+                dataSheet?.getRange(i, 2).setValue(response)
             }
         }
     }
