@@ -1,4 +1,3 @@
-
 function doGet(e: GoogleAppsScript.Events.DoGet) {
     const ScriptProperty = PropertiesService.getScriptProperties()
     //Displays the text on the webpage.
