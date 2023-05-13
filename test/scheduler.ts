@@ -522,8 +522,8 @@ function DeleteAllTriggers() {
             ScriptApp.deleteTrigger(trigger);
         }
     });
-    sheet?.getRange(3, 1, sheet.getLastRow() - 2).clear()
-    sheet?.getRange(3, 2, sheet.getLastRow() - 2).clear()
+    sheet?.getRange(3, 1, sheet.getLastRow() - 2).clearContent()
+    sheet?.getRange(3, 2, sheet.getLastRow() - 2).clearContent()
     let tsheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('triggers')
     tsheet?.clear()
     tsheet?.getRange(1, 1).setValue("date").setBackground('yellow').setFontWeight('bold')
