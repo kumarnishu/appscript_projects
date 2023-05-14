@@ -330,6 +330,7 @@ function TriggerErrorHandler(index) {
 
 //send whatsapp message with response buttons
 function SendWhatsappMessageWithButtons(e: GoogleAppsScript.Events.TimeDriven) {
+    let phone_id=PropertiesService.getScriptProperties().getProperty('phone_id')
     let triggers = findAllTriggersFromTriggersSheet().filter((trigger) => {
         if (trigger.trigger_id === e.triggerUid) {
             return trigger
@@ -341,14 +342,14 @@ function SendWhatsappMessageWithButtons(e: GoogleAppsScript.Events.TimeDriven) {
             try {
 
                 let token = PropertiesService.getScriptProperties().getProperty('accessToken')
-                let url = "https://graph.facebook.com/v16.0/120573477697648/messages";
+                let url = `https://graph.facebook.com/v16.0/${phone_id}/messages`;
                 let data = {
                     "messaging_product": "whatsapp",
                     "recipient_type": "individual",
                     "to": triggers[0].phone,
                     "type": "template",
                     "template": {
-                        "name": "scheduler_with_response",
+                        "name": "salary_reminder    ",
                         "language": {
                             "code": "en_US"
                         },
@@ -357,8 +358,11 @@ function SendWhatsappMessageWithButtons(e: GoogleAppsScript.Events.TimeDriven) {
                                 "type": "header",
                                 "parameters": [
                                     {
-                                        "type": "text",
-                                        "text": triggers[0].work_title
+                                        "type": "image",
+                                        // "text": triggers[0].work_title
+                                        "image": {
+                                            "link": "https://fplogoimages.withfloats.com/tile/605af6c3f7fc820001c55b20.jpg"
+                                        }
                                     }
                                 ]
                             },
@@ -367,7 +371,7 @@ function SendWhatsappMessageWithButtons(e: GoogleAppsScript.Events.TimeDriven) {
                                 "parameters": [
                                     {
                                         "type": "text",
-                                        "text": triggers[0].work_detail
+                                        "text": triggers[0].work_title + " : " + triggers[0].work_detail
                                     }
                                 ]
                             }
@@ -437,7 +441,7 @@ function RefreshTrigger(index: number) {
     let weekdays = String(sheet?.getRange(index, 21).getValue())
     let monthdays = String(sheet?.getRange(index, 22).getValue())
     let triggers: GoogleAppsScript.Script.Trigger[] = []
-    if (mf ===1) {
+    if (mf === 1) {
         let miliseconds = 1 * 30000
         refresh_date = new Date(date.getTime() + miliseconds)
     }
@@ -445,23 +449,23 @@ function RefreshTrigger(index: number) {
         let miliseconds = (mf - 2) * 60000
         refresh_date = new Date(date.getTime() + miliseconds)
     }
-    if (hf >0) {
+    if (hf > 0) {
         let miliseconds = (hf * 60 - 10) * 60000
         refresh_date = new Date(date.getTime() + miliseconds)
     }
-    if (df >0) {
+    if (df > 0) {
         let miliseconds = (df * 24 * 60 - 30) * 60000
         refresh_date = new Date(date.getTime() + miliseconds)
     }
-    if (wf >0) {
+    if (wf > 0) {
         let miliseconds = (wf * 7 * 24 * 60 - 30) * 60000
         refresh_date = new Date(date.getTime() + miliseconds)
     }
-    if (monthf >0) {
+    if (monthf > 0) {
         let miliseconds = (monthf * GetMonthDays(date.getFullYear(), date.getMonth()) * 24 * 60 - 30) * 60000
         refresh_date = new Date(date.getTime() + miliseconds)
     }
-    if (yearf >0) {
+    if (yearf > 0) {
         let miliseconds = (yearf * 365 * 24 * 60 - 30) * 60000
         refresh_date = new Date(date.getTime() + miliseconds)
     }
